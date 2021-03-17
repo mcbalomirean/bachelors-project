@@ -1,11 +1,9 @@
 {
   "name": "Student Failer",
-  "description": "Fails a student automatically.",
   "manifest_version": 3,
   "version": "0.1",
 
   "action": {
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "/img/student_failer16.png",
       "32": "/img/student_failer32.png",
@@ -13,7 +11,7 @@
       "128": "/img/student_failer128.png"
     }
   },
-
+  "description": "Fails a student automatically.",
   "icons": {
     "16": "/img/student_failer16.png",
     "32": "/img/student_failer32.png",
@@ -21,5 +19,9 @@
     "128": "/img/student_failer128.png"
   },
 
-  "permissions": ["https://online.ase.ro/*"]
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "permissions": ["audioCapture", "videoCapture"]
 }
