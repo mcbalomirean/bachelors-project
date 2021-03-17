@@ -5,6 +5,11 @@ const constraints = {
   video: true,
 };
 
+// TODO: export to constants file?
+const portOptions = { name: "video" };
+
+const port = chrome.runtime.connect(portOptions);
+
 // TODO: handle lack of permissions
 // TODO: grab all tracks, let user choose?
 // TODO: cry when user closes window :(
@@ -18,8 +23,10 @@ const getMediaStream = async () => {
   }
 };
 
-chrome.runtime.sendMessage({ greeting: "hello" }, function (response) {
-  console.log(response.greeting);
+port.postMessage("Hello");
+port.onMessage.addListener((msg) => {
+  console.log(msg);
+  port.disconnect();
 });
 
 window.addEventListener("DOMContentLoaded", (event) => {

@@ -3,9 +3,11 @@ try {
     focused: true,
     height: 800,
     width: 400,
-    // type: "popup",
+    type: "popup",
     url: "/html/popup.html",
   };
+
+  const portOptions = { name: "video" };
 
   chrome.runtime.onInstalled.addListener(() => {
     try {
@@ -16,14 +18,13 @@ try {
   });
 
   // TODO: connection between content script and background script
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(
-      sender.tab
-        ? "from a content script:" + sender.tab.url
-        : "from the extension"
-    );
-    if (request.greeting == "hello") sendResponse({ greeting: "hello" });
+  chrome.runtime.onConnect.addListener((port) => {
+    port.onMessage.addListener((msg) => {
+      console.log(msg);
+      port.postMessage("Goodbye");
+      port.disconnect();
+    });
   });
 } catch (error) {
-  console.err(error);
+  console.error(error);
 }
