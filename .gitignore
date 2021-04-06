@@ -1,3 +1,7 @@
+# Application-Specific
+sessions
+tmp
+
 # Logs
 logs
 *.log
