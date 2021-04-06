@@ -6,6 +6,9 @@ var cors = require("cors");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
+const db = require("./models/database"); // TODO: remove?
+db.sequelize.sync({ force: true }); // TODO: REMOVE
+
 var indexRouter = require("./routes/index");
 
 var app = express();
