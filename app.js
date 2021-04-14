@@ -12,8 +12,9 @@ const db = require("./models/database"); // TODO: remove?
 db.sequelize.sync({ force: true }); // TODO: REMOVE
 
 var indexRouter = require("./routes/index");
-var authRouter = require("./routes/auth");
 var monitoringRouter = require("./routes/monitoring");
+var authRouter = require("./routes/auth");
+var quizRouter = require("./routes/quiz");
 
 var authController = require("./controllers/authcontroller");
 
@@ -37,7 +38,7 @@ app.use(cookieParser());
 
 var dbStore = new SequelizeStore({
   db: db.sequelize,
-  modelKey: "sessions",
+  modelKey: "connections",
 });
 app.use(
   session({
@@ -67,7 +68,8 @@ try {
 }
 
 app.use("/", indexRouter);
-app.use("/auth", authRouter);
 app.use("/monitoring", authController.checkAuth, monitoringRouter);
+app.use("/auth", authRouter);
+app.use("/quiz", quizRouter);
 
 module.exports = app;
