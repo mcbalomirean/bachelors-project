@@ -68,7 +68,7 @@ try {
 }
 
 app.use("/", indexRouter);
-app.use("/monitoring", authController.checkAuth, monitoringRouter);
+app.use("/monitoring", monitoringRouter);
 app.use("/auth", authRouter);
 app.use("/quiz", quizRouter);
 
