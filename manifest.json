@@ -1,0 +1,27 @@
+{
+  "name": "Student Failer",
+  "manifest_version": 3,
+  "version": "0.1",
+
+  "action": {
+    "default_icon": {
+      "16": "/img/student_failer16.png",
+      "32": "/img/student_failer32.png",
+      "48": "/img/student_failer48.png",
+      "128": "/img/student_failer128.png"
+    }
+  },
+  "description": "Fails a student automatically.",
+  "icons": {
+    "16": "/img/student_failer16.png",
+    "32": "/img/student_failer32.png",
+    "48": "/img/student_failer48.png",
+    "128": "/img/student_failer128.png"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "permissions": ["audioCapture", "videoCapture"]
+}
