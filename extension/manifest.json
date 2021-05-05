@@ -1,7 +1,7 @@
 {
   "name": "Student Failer",
   "manifest_version": 3,
-  "version": "0.1",
+  "version": "0.1.2",
 
   "action": {
     "default_icon": {
@@ -23,5 +23,12 @@
     "service_worker": "background.js"
   },
 
-  "permissions": ["audioCapture", "videoCapture"]
+  "content_scripts": [
+    {
+      "matches": ["https://online.ase.ro/*"],
+      "js": ["./js/main.js"]
+    }
+  ],
+
+  "permissions": ["audioCapture", "videoCapture", "tabs"]
 }
