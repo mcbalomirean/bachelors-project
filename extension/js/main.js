@@ -99,6 +99,7 @@ const beginMonitoring = async () => {
 
   interval = setInterval(async () => {
     // TODO: move validation? fix?
+    // TODO: works but need to validate browser too
     validateScriptState();
 
     let data = new FormData();
