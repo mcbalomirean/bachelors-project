@@ -8,6 +8,7 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^3.6.1",
     "@vladmandic/face-api": "^1.2.3",
+    "@vladmandic/human": "^1.8.3",
     "canvas": "^2.7.0",
     "connect-session-sequelize": "^7.1.1",
     "cookie-parser": "~1.4.4",
