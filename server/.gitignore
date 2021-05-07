@@ -1,6 +1,8 @@
 # Application-Specific
 sessions
 tmp
+*.cert
+*.key
 
 # Logs
 logs
