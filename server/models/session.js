@@ -1,19 +1,8 @@
 module.exports = (sequelize, DataTypes, Student, Quiz) => {
   return sequelize.define("Session", {
-    StudentName: {
-      type: DataTypes.STRING,
-      references: {
-        model: Student,
-        key: "name",
-      },
-      primaryKey: true,
-    },
-    QuizId: {
+    id: {
       type: DataTypes.INTEGER,
-      references: {
-        model: Quiz,
-        key: "id",
-      },
+      autoIncrement: true,
       primaryKey: true,
     },
     isFlagged: {

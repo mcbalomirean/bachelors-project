@@ -9,7 +9,10 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
 const db = require("./models/database"); // TODO: remove?
-db.sequelize.sync({ force: true }); // TODO: REMOVE
+
+(async () => {
+  await db.sequelize.sync({ force: true }); // TODO: REMOVE; ALSO, THIS RETURNS A PROMISE
+})();
 
 var indexRouter = require("./routes/index");
 var monitoringRouter = require("./routes/monitoring");
