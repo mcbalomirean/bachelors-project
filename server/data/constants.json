@@ -1,0 +1,31 @@
+{
+  "humanConfig": {
+    "modelBasePath": "file://public/models/",
+    "face": {
+      "enabled": true,
+      "detector": { "enabled": true, "rotation": false },
+      "mesh": { "enabled": true },
+      "iris": { "enabled": true },
+      "description": { "enabled": true },
+      "emotion": { "enabled": false }
+    },
+    "body": {
+      "enabled": false
+    },
+    "hand": {
+      "enabled": false
+    },
+    "object": {
+      "enabled": false
+    },
+    "videoOptimized": false,
+    "filter": {
+      "enabled": true,
+      "width": 640,
+      "height": 480
+    }
+  },
+  "enums": {
+    "DATA_TYPES": ["frame", "behavior"]
+  }
+}
