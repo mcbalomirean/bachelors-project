@@ -1,7 +1,9 @@
+const { enums } = require("../data/constants");
+
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define("Flagged_Data", {
     type: {
-      type: DataTypes.ENUM("frame", "behavior"),
+      type: DataTypes.ENUM(enums.DATA_TYPES),
       allowNull: false,
     },
     path: {

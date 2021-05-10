@@ -1,5 +1,8 @@
 const fs = require("fs/promises");
 
+const { FlaggedData } = require("../models/database");
+const { enums } = require("../data/constants");
+
 const tf = require("@tensorflow/tfjs-node");
 const Human = require("@vladmandic/human").default;
 const { humanConfig } = require("../data/constants");
@@ -75,7 +78,7 @@ const human = new Human(humanConfig);
 //     console.error(err);
 //   });
 
-async function analyzeData(path) {
+async function analyzeFrame(path) {
   if (!path || typeof path !== "string") {
     throw new Error("Path is invalid!");
   }
@@ -104,14 +107,78 @@ async function analyzeData(path) {
     return cast;
   });
 
-  let result;
+  let result = null;
   try {
     result = await human.detect(tensor);
   } catch (error) {
     console.error(error);
   }
 
-  console.log(result);
+  return result;
+}
+
+async function validateFrame(analyzedFrame) {
+  // TODO: recognize face
+  let reason = "";
+
+  if (analyzedFrame.face.length !== 1) {
+    reason += `${analyzedFrame.face.length} faces. `;
+    // TODO: return directly
+  }
+
+  faceGestures = analyzedFrame.gesture
+    .filter((gesture) => {
+      return gesture.hasOwnProperty("face");
+    })
+    .map((element) => {
+      return element.gesture;
+    });
+
+  if (!faceGestures.includes("facing center")) {
+    // TODO: flag data, return immediately?
+    // TODO: mouth open
+  }
+
+  irisGestures = analyzedFrame.gesture
+    .filter((gesture) => {
+      return gesture.hasOwnProperty("iris");
+    })
+    .map((element) => {
+      return element.gesture;
+    });
+
+  if (!irisGestures.includes("looking center")) {
+    // TODO: flag data, return immediately?
+  }
+
+  console.log(faceGestures);
+}
+
+async function flagData(type, path, reason) {
+  if (!type || typeof type !== "string" || !enums.DATA_TYPES.includes(type)) {
+    throw new Error("Type is invalid!");
+  }
+
+  if (path && typeof path !== "string") {
+    throw new Error("Path is not a string!");
+  }
+
+  if (reason && typeof reason !== "string") {
+    throw new Error("Reason is not a string!");
+  }
+
+  let result = null;
+  try {
+    result = await FlaggedData.create({
+      type: type,
+      path: path ?? "",
+      reason: reason ?? "",
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
+  return result;
 }
 
 // TODO: validate, verify files
@@ -141,8 +208,12 @@ module.exports.receiveData = async (req, res) => {
       return res.status(500).send();
     }
 
+    // TODO: validate
+    const analyzedFrame = await analyzeFrame(uploadPath);
+    console.log(analyzedFrame.gesture);
+    await validateFrame(analyzedFrame);
+
+    // TODO: move with detailed response?
     res.status(200).send();
   }
-
-  analyzeData(uploadPath);
 };
