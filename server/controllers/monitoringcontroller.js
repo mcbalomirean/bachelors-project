@@ -117,41 +117,59 @@ async function analyzeFrame(path) {
   return result;
 }
 
-async function validateFrame(analyzedFrame) {
-  // TODO: recognize face
-  let reason = "";
+// TODO: return flagged data? no real reason...
+async function validateFrame(analyzedFrame, path) {
+  try {
+    // TODO: recognize face
+    if (analyzedFrame.face.length !== 1) {
+      let reason = `${analyzedFrame.face.length} faces detected.`;
+      // TODO: weird way of getting enums...
+      await flagData(enums.DATA_TYPES[0], path, reason);
+      return;
+    }
 
-  if (analyzedFrame.face.length !== 1) {
-    reason += `${analyzedFrame.face.length} faces. `;
-    // TODO: return directly
-  }
+    faceGestures = analyzedFrame.gesture
+      .filter((gesture) => {
+        return gesture.hasOwnProperty("face");
+      })
+      .map((element) => {
+        return element.gesture;
+      });
 
-  faceGestures = analyzedFrame.gesture
-    .filter((gesture) => {
-      return gesture.hasOwnProperty("face");
-    })
-    .map((element) => {
-      return element.gesture;
+    // TODO: normalize string? eh...
+    if (!faceGestures.includes("facing center")) {
+      let reason = "Not facing center.";
+      await flagData(enums.DATA_TYPES[0], path, reason);
+      return;
+      // TODO: mouth open
+      // TODO: head turned
+    }
+
+    faceGestures.forEach(gesture => {
+      if (gesture.startsWith("mouth") && parseInt(gesture.match(/\d+/)[0]) > 10) {
+        let reason = "Mouth open.";
+        await flagData(enums.DATA_TYPES[0], path, reason);
+        return;
+      }
     });
 
-  if (!faceGestures.includes("facing center")) {
-    // TODO: flag data, return immediately?
-    // TODO: mouth open
+    irisGestures = analyzedFrame.gesture
+      .filter((gesture) => {
+        return gesture.hasOwnProperty("iris");
+      })
+      .map((element) => {
+        return element.gesture;
+      });
+
+    // TODO: test
+    if (!irisGestures.includes("facing center") && !irisGestures.includes("looking center")) {
+      let reason = "Not looking towards screen/camera.";
+      await flagData(enums.DATA_TYPES[0], path, reason);
+      return;
+    }
+  } catch (error) {
+    console.log(error);
   }
-
-  irisGestures = analyzedFrame.gesture
-    .filter((gesture) => {
-      return gesture.hasOwnProperty("iris");
-    })
-    .map((element) => {
-      return element.gesture;
-    });
-
-  if (!irisGestures.includes("looking center")) {
-    // TODO: flag data, return immediately?
-  }
-
-  console.log(faceGestures);
 }
 
 async function flagData(type, path, reason) {
@@ -210,8 +228,7 @@ module.exports.receiveData = async (req, res) => {
 
     // TODO: validate
     const analyzedFrame = await analyzeFrame(uploadPath);
-    console.log(analyzedFrame.gesture);
-    await validateFrame(analyzedFrame);
+    validateFrame(analyzedFrame, uploadPath);
 
     // TODO: move with detailed response?
     res.status(200).send();
