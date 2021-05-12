@@ -67,7 +67,7 @@ const validateBrowser = () => {
 };
 
 const validateUserName = (userName) => {
-  if (!userName || userName === "Log in") {
+  if (!userName || userName === "Log in" || userName === "Autentificare") {
     window.alert(
       "You need to log in before the Student Failer extension can work!"
     );
