@@ -145,13 +145,16 @@ async function validateFrame(analyzedFrame, path) {
       // TODO: head turned
     }
 
-    faceGestures.forEach(gesture => {
-      if (gesture.startsWith("mouth") && parseInt(gesture.match(/\d+/)[0]) > 10) {
+    for (const gesture of faceGestures) {
+      if (
+        gesture.startsWith("mouth") &&
+        parseInt(gesture.match(/\d+/)[0]) > 10
+      ) {
         let reason = "Mouth open.";
         await flagData(enums.DATA_TYPES[0], path, reason);
         return;
       }
-    });
+    }
 
     irisGestures = analyzedFrame.gesture
       .filter((gesture) => {
@@ -162,7 +165,10 @@ async function validateFrame(analyzedFrame, path) {
       });
 
     // TODO: test
-    if (!irisGestures.includes("facing center") && !irisGestures.includes("looking center")) {
+    if (
+      !irisGestures.includes("facing center") &&
+      !irisGestures.includes("looking center")
+    ) {
       let reason = "Not looking towards screen/camera.";
       await flagData(enums.DATA_TYPES[0], path, reason);
       return;
