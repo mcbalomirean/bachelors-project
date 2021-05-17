@@ -1,12 +1,4 @@
 try {
-  // chrome.runtime.onInstalled.addListener(() => {
-  //   try {
-  //     chrome.windows.create(popupData);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // });
-
   // TODO: connection between content script and background script
   // TODO: handle disconnection
 

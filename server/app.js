@@ -10,10 +10,6 @@ var logger = require("morgan");
 
 const db = require("./models/database"); // TODO: remove?
 
-(async () => {
-  await db.sequelize.sync({ force: true }); // TODO: REMOVE; ALSO, THIS RETURNS A PROMISE
-})();
-
 var indexRouter = require("./routes/index");
 var monitoringRouter = require("./routes/monitoring");
 var authRouter = require("./routes/auth");
@@ -52,16 +48,22 @@ app.use(
     cookie: { secure: false },
   })
 );
-dbStore.sync();
+
+if (process.env.DB_INIT === 1) {
+  (async () => {
+    await db.sequelize.sync({ force: true });
+  })();
+  dbStore.sync();
+}
 
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(authController.passport.initialize());
 app.use(authController.passport.session());
 
-// TODO: make async?
+// TODO: make async? conditional?
 try {
-  fs.mkdirSync(`${__dirname}/sessions`);
+  fs.mkdirSync("./public/sessions");
 } catch (error) {
   if (error.code == "EEXIST") {
     console.log("Session folder exists.");

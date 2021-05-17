@@ -141,8 +141,6 @@ async function validateFrame(analyzedFrame, path) {
       let reason = "Not facing center.";
       await flagData(enums.DATA_TYPES[0], path, reason);
       return;
-      // TODO: mouth open
-      // TODO: head turned
     }
 
     for (const gesture of faceGestures) {
@@ -212,7 +210,7 @@ module.exports.receiveData = async (req, res) => {
   let name = req.body.name;
   let frame = req.files.frame;
 
-  let sessionPath = `${__dirname}/../sessions/${name}/`;
+  let sessionPath = `./public/sessions/${name}/`;
   let uploadDate = new Date().getTime();
   let uploadPath = `${sessionPath}${uploadDate}.png`;
 

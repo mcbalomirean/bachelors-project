@@ -98,6 +98,7 @@ const beginMonitoring = async () => {
   let imageCapture = new ImageCapture(videoTrack);
 
   interval = setInterval(async () => {
+    // TODO: stop sending of frame on failure somehow
     // TODO: move validation? fix?
     // TODO: works but need to validate browser too
     validateScriptState();
@@ -130,5 +131,9 @@ port.onMessage.addListener((message) => {
   }
 });
 
-preventCopying();
-beginMonitoring();
+try {
+  preventCopying();
+  beginMonitoring();
+} catch (error) {
+  console.log("STOPPED SCRIPT!");
+}
