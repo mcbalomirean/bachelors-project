@@ -33,10 +33,39 @@ module.exports.toggle = async (req, res) => {
 
 module.exports.findAll = async (req, res) => {
   try {
-    let results = await db.Quiz.findAll();
+    let results = await db.Quiz.findAll({
+      attributes: {
+        include: [
+          [Sequelize.fn("COUNT", Sequelize.col("Students.name")), "noStudents"],
+        ],
+        exclude: ["createdAt", "updatedAt"],
+      },
+      include: [{ model: db.Student, attributes: [] }],
+      group: ["Quiz.id", Sequelize.col("Students.name")],
+    });
+
     res.status(200).send(results);
   } catch (error) {
     // TODO: change? don't just send server-side error
+    res.status(500).send(error);
+  }
+};
+
+module.exports.getQuizStudents = async (req, res) => {
+  try {
+    let quiz = await db.Quiz.findByPk(req.params.id);
+
+    if (quiz) {
+      let results = await quiz.getStudents({
+        attributes: [],
+      });
+
+      res.status(200).send(results);
+    } else {
+      res.status(404).send("Quiz not found.");
+    }
+  } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 };
