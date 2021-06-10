@@ -1,21 +1,16 @@
-function App() {
+import { Switch, Route } from "react-router-dom";
+import Quizzes from "./Quizzes";
+import Quiz from "./Quiz";
+
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Switch>
+      <Route path="/:id">
+        <Quiz />
+      </Route>
+      <Route path="/">
+        <Quizzes />
+      </Route>
+    </Switch>
   );
 }
-
-export default App;
