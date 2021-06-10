@@ -114,21 +114,21 @@ async function analyzeFrame(path) {
     console.error(error);
   }
 
-  return result;
+  return result.persons;
 }
 
 // TODO: return flagged data? no real reason...
-async function validateFrame(analyzedFrame, path) {
+async function validateFrame(personsDetected, path) {
   try {
     // TODO: recognize face
-    if (analyzedFrame.face.length !== 1) {
-      let reason = `${analyzedFrame.face.length} faces detected.`;
+    if (personsDetected.length !== 1) {
+      let reason = `${personsDetected.length} faces detected.`;
       // TODO: weird way of getting enums...
       await flagData(enums.DATA_TYPES[0], path, reason);
       return;
     }
 
-    faceGestures = analyzedFrame.gesture
+    faceGestures = personsDetected[0].gestures
       .filter((gesture) => {
         return gesture.hasOwnProperty("face");
       })
@@ -154,7 +154,7 @@ async function validateFrame(analyzedFrame, path) {
       }
     }
 
-    irisGestures = analyzedFrame.gesture
+    irisGestures = personsDetected[0].gestures
       .filter((gesture) => {
         return gesture.hasOwnProperty("iris");
       })
@@ -231,8 +231,8 @@ module.exports.receiveData = async (req, res) => {
     }
 
     // TODO: validate
-    const analyzedFrame = await analyzeFrame(uploadPath);
-    validateFrame(analyzedFrame, uploadPath);
+    const personsDetected = await analyzeFrame(uploadPath);
+    validateFrame(personsDetected, uploadPath);
 
     // TODO: move with detailed response?
     res.status(200).send();
