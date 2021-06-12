@@ -21,7 +21,7 @@ var app = express();
 
 app.use(
   cors({
-    origin: "https://online.ase.ro",
+    // origin: "https://online.ase.ro",
     credentials: true,
   })
 );
@@ -49,7 +49,7 @@ app.use(
   })
 );
 
-if (process.env.DB_INIT === 1) {
+if (process.env.DB_INIT == 1) {
   (async () => {
     await db.sequelize.sync({ force: true });
   })();
