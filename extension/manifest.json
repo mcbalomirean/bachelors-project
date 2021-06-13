@@ -1,5 +1,5 @@
 {
-  "name": "Student Failer",
+  "name": "Student Monitor",
   "manifest_version": 3,
   "version": "0.1.2",
 
@@ -11,7 +11,7 @@
       "128": "/img/student_failer128.png"
     }
   },
-  "description": "Fails a student automatically.",
+  "description": "Student quiz monitoring solution.",
   "icons": {
     "16": "/img/student_failer16.png",
     "32": "/img/student_failer32.png",
