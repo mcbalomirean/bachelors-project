@@ -5,7 +5,7 @@ const quizController = require("../controllers/quizcontroller");
 
 router.get("/", quizController.findAll);
 
-router.get("/:id", quizController.getQuizStudents);
+router.get("/:id", quizController.getQuizSessions);
 
 router.post("/", quizController.create);
 

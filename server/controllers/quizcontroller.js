@@ -36,29 +36,28 @@ module.exports.findAll = async (req, res) => {
     let results = await db.Quiz.findAll({
       attributes: {
         include: [
-          [Sequelize.fn("COUNT", Sequelize.col("Students.name")), "noStudents"],
+          [Sequelize.fn("COUNT", Sequelize.col("Sessions.id")), "noStudents"],
         ],
         exclude: ["createdAt", "updatedAt"],
       },
-      include: [{ model: db.Student, attributes: [] }],
-      group: ["Quiz.id", Sequelize.col("Students.name")],
+      include: [{ model: db.Session, attributes: [] }],
+      group: ["Quiz.id", Sequelize.col("Sessions.id")],
     });
 
     res.status(200).send(results);
   } catch (error) {
     // TODO: change? don't just send server-side error
+    console.log(error);
     res.status(500).send(error);
   }
 };
 
-module.exports.getQuizStudents = async (req, res) => {
+module.exports.getQuizSessions = async (req, res) => {
   try {
     let quiz = await db.Quiz.findByPk(req.params.id);
 
     if (quiz) {
-      let results = await quiz.getStudents({
-        attributes: [],
-      });
+      let results = await quiz.getSessions();
 
       res.status(200).send(results);
     } else {

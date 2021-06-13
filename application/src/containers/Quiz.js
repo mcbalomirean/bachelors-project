@@ -5,7 +5,7 @@ import { API } from "../util/constants";
 
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import CardGroup from "react-bootstrap/CardGroup";
-import StudentCard from "../components/StudentCard";
+import SessionCard from "../components/SessionCard";
 
 const config = {
   baseURL: `${API}/quiz`,
@@ -14,11 +14,11 @@ const config = {
 export default function Quiz(props) {
   let { id } = useParams();
 
-  const [students, setStudents] = useState([]);
+  const [sessions, setSessions] = useState([]);
 
   const handleUpdate = () => {
     axios.get(`/${id}`, config).then((result) => {
-      setStudents(result.data);
+      setSessions(result.data);
     });
   };
 
@@ -35,13 +35,13 @@ export default function Quiz(props) {
         <Breadcrumb.Item active>Quiz {id}</Breadcrumb.Item>
       </Breadcrumb>
       <CardGroup className="m-3">
-        {students.map((student, idx) => (
-          <StudentCard
+        {sessions.map((session, idx) => (
+          <SessionCard
             key={idx}
-            id={student.Session.id}
-            quizId={student.Session.QuizId}
-            studentName={student.Session.StudentName}
-            isFlagged={student.Session.isFlagged}
+            id={session.id}
+            quizId={session.QuizId}
+            studentName={session.StudentName}
+            isFlagged={session.isFlagged}
           />
         ))}
       </CardGroup>
