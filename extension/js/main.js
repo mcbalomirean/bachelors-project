@@ -1,32 +1,92 @@
-// TODO: export to constants file?
-// TODO: unique id?
-const API_URL = "http://localhost:3001";
-const STATUS_OK = 200;
+const API_URL = "http://localhost:3001/monitoring";
+const STATUSES = {
+  STATUS_OK: 200,
+  STATUS_NOT_FOUND: 404,
+  STATUS_ERROR: 500,
+};
 
-const VALIDATE_BROWSER_MSG = "CHECK_BROWSER";
-const WORKING_STATE = "WORKING";
-const ILLEGAL_STATE = "ILLEGAL";
+let userName, quizId, interval;
 
-let scriptState = WORKING_STATE;
-let interval;
+main();
 
-const portOptions = { name: "bg" };
-const port = chrome.runtime.connect(portOptions);
+async function main() {
+  let monitorState = (await asyncStorageGet({ monitorState: null }))
+    .monitorState;
+
+  switch (monitorState) {
+    case null:
+      // TODO: wrap trycatch
+      userName = getUserName();
+      validateUserName(userName);
+
+      await asyncStorageSet({ monitorState: "READY", userName: userName });
+    case "READY":
+      // TODO: throws, validations
+      userName = (await asyncStorageGet("userName")).userName;
+      quizId = getQuizId();
+
+      // TODO: wrap in trycatch
+      let response = await fetch(`${API_URL}/${quizId}`, {
+        method: "GET",
+      });
+
+      if (response.status == STATUSES.STATUS_NOT_FOUND) {
+        console.log("Quiz not found.");
+        return;
+      } else {
+        response = await response.json();
+      }
+
+      if (!response) {
+        console.log("Quiz inactive.");
+        return;
+      }
+
+      await asyncStorageSet({ monitorState: "WORKING", quizId: quizId });
+    case "WORKING":
+      if (!userName || !quizId) {
+        let values = await asyncStorageGet(["userName", "quizId"]);
+        userName = values.userName;
+        quizId = values.quizId;
+      }
+
+      preventCopying();
+      monitor();
+      break;
+
+    default:
+      break;
+  }
+}
 
 // TODO: get id?
-const getUserName = () => {
+function getUserName() {
   let a = document.querySelector(
     "#page-footer > div > div.logininfo > a:nth-child(1)"
   );
 
   return a ? a.innerHTML : null;
-};
+}
+
+function validateUserName(userName) {
+  if (!userName || userName === "Log in" || userName === "Autentificare") {
+    window.alert(
+      "You need to log in before the Student Monitor extension can initialize!"
+    );
+    throw new Error("Student not logged in.");
+  }
+}
+
+function getQuizId() {
+  // TODO: validate
+  return new URLSearchParams(window.location.search).get("id");
+}
 
 // TODO: grab all tracks, let user choose?
 // TODO: cry when user closes window :(
 // TODO: handle lack of tracks!
 
-const getMediaTracks = async () => {
+async function getMediaTracks() {
   try {
     let constraints = {
       audio: true,
@@ -41,9 +101,9 @@ const getMediaTracks = async () => {
   } catch (error) {
     console.error(error);
   }
-};
+}
 
-const preventCopying = () => {
+function preventCopying() {
   document.addEventListener("cut", (event) => {
     event.preventDefault();
   });
@@ -60,52 +120,18 @@ const preventCopying = () => {
   document.addEventListener("selectstart", (event) => {
     event.preventDefault();
   });
-};
+}
 
-const validateBrowser = () => {
-  port.postMessage(VALIDATE_BROWSER_MSG);
-};
-
-const validateUserName = (userName) => {
-  if (!userName || userName === "Log in" || userName === "Autentificare") {
-    window.alert(
-      "You need to log in before the Student Failer extension can work!"
-    );
-    throw new Error("Student is not logged in.");
-  }
-};
-
-// TODO: elaborate state
-const validateScriptState = () => {
-  if (scriptState === ILLEGAL_STATE) {
-    // TODO: separate?
-    clearInterval(interval);
-
-    throw new Error(
-      "Student Failer is in an illegal state. Reload page after fixing."
-    );
-  }
-};
-
-const beginMonitoring = async () => {
-  validateBrowser();
-
-  let userName = getUserName();
-  validateUserName(userName);
-
+async function monitor() {
   let [videoTrack, audioTrack] = await getMediaTracks();
-
   let imageCapture = new ImageCapture(videoTrack);
 
   interval = setInterval(async () => {
-    // TODO: stop sending of frame on failure somehow
-    // TODO: move validation? fix?
-    // TODO: works but need to validate browser too
-    validateScriptState();
+    let frame = await imageCapture.takePhoto();
 
     let data = new FormData();
-    let frame = await imageCapture.takePhoto();
     data.append("name", userName);
+    data.append("id", quizId);
     data.append("frame", frame);
 
     let response = await fetch(`${API_URL}/monitoring`, {
@@ -113,27 +139,33 @@ const beginMonitoring = async () => {
       body: data,
     });
 
-    if (response.status == STATUS_OK) {
+    if (response.ok) {
       console.log("Frame sent.");
     }
   }, 1000);
-};
+}
 
-// TODO: add onDisconnect?
-port.onMessage.addListener((message) => {
-  switch (message) {
-    case ILLEGAL_STATE:
-      scriptState = ILLEGAL_STATE;
-      break;
+// TODO: chrome.runtime.lastError not available
+function asyncStorageGet(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, (items) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
 
-    default:
-      break;
-  }
-});
+      resolve(items);
+    });
+  });
+}
 
-try {
-  preventCopying();
-  beginMonitoring();
-} catch (error) {
-  console.log("STOPPED SCRIPT!");
+function asyncStorageSet(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(keys, (items) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+
+      resolve(items);
+    });
+  });
 }

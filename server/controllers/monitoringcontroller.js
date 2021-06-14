@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 
-const { FlaggedData } = require("../models/database");
+const { Quiz, FlaggedData } = require("../models/database");
 const { enums } = require("../data/constants");
 
 const tf = require("@tensorflow/tfjs-node");
@@ -202,6 +202,23 @@ async function flagData(type, path, reason) {
 
   return result;
 }
+
+module.exports.checkQuiz = async (req, res) => {
+  try {
+    let quiz = await Quiz.findByPk(req.params.id, {
+      attributes: ["isActive"],
+    });
+
+    if (quiz) {
+      res.status(200).send(quiz.isActive);
+    } else {
+      res.status(404).send("Quiz not found.");
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+};
 
 // TODO: validate, verify files
 // TODO: decide path based on student

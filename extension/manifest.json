@@ -25,10 +25,10 @@
 
   "content_scripts": [
     {
-      "matches": ["https://online.ase.ro/*"],
+      "matches": ["https://online.ase.ro/mod/quiz/*"],
       "js": ["./js/main.js"]
     }
   ],
 
-  "permissions": ["audioCapture", "videoCapture", "tabs"]
+  "permissions": ["audioCapture", "videoCapture", "tabs", "storage"]
 }
