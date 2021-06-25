@@ -7,7 +7,8 @@ import CardGroup from "react-bootstrap/CardGroup";
 import QuizCard from "../components/QuizCard";
 
 const config = {
-  baseURL: `${API}/quiz`,
+  baseURL: `${API}/reviewing`,
+  withCredentials: true,
 };
 
 export default function Quizzes() {

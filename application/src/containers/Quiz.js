@@ -8,7 +8,8 @@ import CardGroup from "react-bootstrap/CardGroup";
 import SessionCard from "../components/SessionCard";
 
 const config = {
-  baseURL: `${API}/quiz`,
+  baseURL: `${API}/reviewing`,
+  withCredentials: true,
 };
 
 export default function Quiz(props) {
@@ -32,7 +33,7 @@ export default function Quiz(props) {
         <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
           Quizzes
         </Breadcrumb.Item>
-        <Breadcrumb.Item active>Quiz {id}</Breadcrumb.Item>
+        <Breadcrumb.Item active>Quiz #{id}</Breadcrumb.Item>
       </Breadcrumb>
       <CardGroup className="m-3">
         {sessions.map((session, idx) => (
