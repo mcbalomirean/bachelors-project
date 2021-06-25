@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     reason: {
       type: DataTypes.STRING,
     },
+    SessionId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   });
 };
 

@@ -57,7 +57,19 @@ module.exports.getQuizSessions = async (req, res) => {
     let quiz = await db.Quiz.findByPk(req.params.id);
 
     if (quiz) {
-      let results = await quiz.getSessions();
+      let results = await quiz.getSessions({
+        attributes: {
+          include: [
+            [
+              Sequelize.fn("COUNT", Sequelize.col("FlaggedData.id")),
+              "noFlaggedData",
+            ],
+          ],
+          exclude: ["createdAt", "updatedAt"],
+        },
+        include: [{ model: db.FlaggedData, as: "FlaggedData", attributes: [] }],
+        group: ["Session.id"],
+      });
 
       res.status(200).send(results);
     } else {

@@ -10,10 +10,9 @@ var logger = require("morgan");
 
 const db = require("./models/database"); // TODO: remove?
 
-var indexRouter = require("./routes/index");
 var monitoringRouter = require("./routes/monitoring");
 var authRouter = require("./routes/auth");
-var quizRouter = require("./routes/quiz");
+var reviewingRouter = require("./routes/reviewing");
 
 var authController = require("./controllers/authcontroller");
 
@@ -21,7 +20,7 @@ var app = express();
 
 app.use(
   cors({
-    // origin: "https://online.ase.ro",
+    origin: true,
     credentials: true,
   })
 );
@@ -72,9 +71,8 @@ try {
   }
 }
 
-app.use("/", indexRouter);
 app.use("/monitoring", monitoringRouter);
 app.use("/auth", authRouter);
-app.use("/quiz", quizRouter);
+app.use("/reviewing", authController.checkAuth, reviewingRouter);
 
 module.exports = app;

@@ -1,7 +1,7 @@
 const fs = require("fs/promises");
 
-const { Quiz, FlaggedData } = require("../models/database");
-const { enums } = require("../data/constants");
+const { Quiz, Session, FlaggedData } = require("../models/database");
+const { SESSIONS_PATH, enums } = require("../data/constants");
 
 const tf = require("@tensorflow/tfjs-node");
 const Human = require("@vladmandic/human").default;
@@ -86,7 +86,7 @@ async function analyzeFrame(path) {
   // TODO: handle rejection?
   let buffer;
   try {
-    buffer = await fs.readFile(path);
+    buffer = await fs.readFile(`${SESSIONS_PATH}/${path}`);
   } catch (error) {
     throw error;
   }
@@ -118,13 +118,13 @@ async function analyzeFrame(path) {
 }
 
 // TODO: return flagged data? no real reason...
-async function validateFrame(personsDetected, path) {
+async function validateFrame(session, personsDetected, path) {
   try {
     // TODO: recognize face
     if (personsDetected.length !== 1) {
       let reason = `${personsDetected.length} faces detected.`;
       // TODO: weird way of getting enums...
-      await flagData(enums.DATA_TYPES[0], path, reason);
+      await flagData(session, enums.DATA_TYPES[0], path, reason);
       return;
     }
 
@@ -139,7 +139,7 @@ async function validateFrame(personsDetected, path) {
     // TODO: normalize string? eh...
     if (!faceGestures.includes("facing center")) {
       let reason = "Not facing center.";
-      await flagData(enums.DATA_TYPES[0], path, reason);
+      await flagData(session, enums.DATA_TYPES[0], path, reason);
       return;
     }
 
@@ -149,7 +149,7 @@ async function validateFrame(personsDetected, path) {
         parseInt(gesture.match(/\d+/)[0]) > 10
       ) {
         let reason = "Mouth open.";
-        await flagData(enums.DATA_TYPES[0], path, reason);
+        await flagData(session, enums.DATA_TYPES[0], path, reason);
         return;
       }
     }
@@ -168,7 +168,7 @@ async function validateFrame(personsDetected, path) {
       !irisGestures.includes("looking center")
     ) {
       let reason = "Not looking towards screen/camera.";
-      await flagData(enums.DATA_TYPES[0], path, reason);
+      await flagData(session, enums.DATA_TYPES[0], path, reason);
       return;
     }
   } catch (error) {
@@ -176,7 +176,7 @@ async function validateFrame(personsDetected, path) {
   }
 }
 
-async function flagData(type, path, reason) {
+async function flagData(session, type, path, reason) {
   if (!type || typeof type !== "string" || !enums.DATA_TYPES.includes(type)) {
     throw new Error("Type is invalid!");
   }
@@ -191,7 +191,7 @@ async function flagData(type, path, reason) {
 
   let result = null;
   try {
-    result = await FlaggedData.create({
+    result = await session.createFlaggedDatum({
       type: type,
       path: path ?? "",
       reason: reason ?? "",
@@ -203,16 +203,30 @@ async function flagData(type, path, reason) {
   return result;
 }
 
-module.exports.checkQuiz = async (req, res) => {
+async function isQuizActive(id) {
   try {
-    let quiz = await Quiz.findByPk(req.params.id, {
+    let quiz = await Quiz.findByPk(id, {
       attributes: ["isActive"],
     });
 
     if (quiz) {
-      res.status(200).send(quiz.isActive);
+      return quiz.isActive;
     } else {
+      return null;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports.checkQuiz = async (req, res) => {
+  try {
+    let quizActive = await isQuizActive(req.params.id);
+
+    if (quizActive === null) {
       res.status(404).send("Quiz not found.");
+    } else {
+      res.status(200).send(quizActive);
     }
   } catch (error) {
     console.log(error);
@@ -221,15 +235,29 @@ module.exports.checkQuiz = async (req, res) => {
 };
 
 // TODO: validate, verify files
-// TODO: decide path based on student
-// TODO: justify using async
 module.exports.receiveData = async (req, res) => {
   let name = req.body.name;
+  let id = req.body.id;
   let frame = req.files.frame;
 
-  let sessionPath = `./public/sessions/${name}/`;
+  let quizActive = await isQuizActive(id);
+
+  if (quizActive === null) {
+    return res.status(404).send({ message: "Quiz not found." });
+  } else if (quizActive === false) {
+    return res.status(406).send({ message: "Quiz not active" });
+  }
+
+  let [session, wasCreated] = await Session.findOrCreate({
+    where: { StudentName: name, QuizId: id },
+  });
+
+  let sessionPath = `${SESSIONS_PATH}/${name}`;
+
   let uploadDate = new Date().getTime();
-  let uploadPath = `${sessionPath}${uploadDate}.png`;
+  let uploadPath = `${sessionPath}/${uploadDate}.png`;
+
+  let storagePath = `${name}/${uploadDate}.png`;
 
   if (frame) {
     try {
@@ -248,8 +276,8 @@ module.exports.receiveData = async (req, res) => {
     }
 
     // TODO: validate
-    const personsDetected = await analyzeFrame(uploadPath);
-    validateFrame(personsDetected, uploadPath);
+    const personsDetected = await analyzeFrame(storagePath);
+    validateFrame(session, personsDetected, storagePath);
 
     // TODO: move with detailed response?
     res.status(200).send();

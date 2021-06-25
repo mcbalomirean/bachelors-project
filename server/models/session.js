@@ -5,10 +5,6 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    isFlagged: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     QuizId: {
       type: DataTypes.INTEGER,
       allowNull: false,

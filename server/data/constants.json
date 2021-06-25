@@ -1,4 +1,5 @@
 {
+  "SESSIONS_PATH": "./public/sessions",
   "humanConfig": {
     "modelBasePath": "file://public/models/",
     "face": {

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const monitoringController = require("../controllers/monitoringcontroller");
 
-router.get("/:id", monitoringController.checkQuiz);
+router.get("/quiz/:id", monitoringController.checkQuiz);
 
 router.post("/", monitoringController.receiveData);
 

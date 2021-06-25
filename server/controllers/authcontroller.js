@@ -11,7 +11,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let [user, created] = await db.Student.findOrCreate({
+        let [user, created] = await db.Proctor.findOrCreate({
           where: {
             id: profile._json.sub, //TODO: study this further
             email: profile._json.email,
@@ -33,8 +33,8 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   //TODO: might fail?\
   try {
-    let student = await db.Student.findByPk(id);
-    done(null, student);
+    let proctor = await db.Proctor.findByPk(id);
+    done(null, proctor);
   } catch (error) {
     done(error);
   }
