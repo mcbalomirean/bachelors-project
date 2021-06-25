@@ -15,39 +15,29 @@ async function main() {
 
   switch (monitorState) {
     case null:
-      // TODO: wrap trycatch
+      await asyncStorageSet({ monitorState: "READY" });
+    case "READY":
+      // TODO: throws, validations
       userName = getUserName();
       validateUserName(userName);
 
-      await asyncStorageSet({ monitorState: "READY", userName: userName });
-    case "READY":
-      // TODO: throws, validations
-      userName = (await asyncStorageGet("userName")).userName;
       quizId = getQuizId();
+      if (!(await isQuizActive())) {
+        return;
+      }
 
-      // TODO: wrap in trycatch
-      let response = await fetch(`${API_URL}/${quizId}`, {
-        method: "GET",
+      await asyncStorageSet({
+        monitorState: "WORKING",
+        userName: userName,
+        quizId: quizId,
       });
-
-      if (response.status == STATUSES.STATUS_NOT_FOUND) {
-        console.log("Quiz not found.");
-        return;
-      } else {
-        response = await response.json();
-      }
-
-      if (!response) {
-        console.log("Quiz inactive.");
-        return;
-      }
-
-      await asyncStorageSet({ monitorState: "WORKING", quizId: quizId });
     case "WORKING":
       if (!userName || !quizId) {
         let values = await asyncStorageGet(["userName", "quizId"]);
         userName = values.userName;
         quizId = values.quizId;
+
+        await validateParameters();
       }
 
       preventCopying();
@@ -59,7 +49,6 @@ async function main() {
   }
 }
 
-// TODO: get id?
 function getUserName() {
   let a = document.querySelector(
     "#page-footer > div > div.logininfo > a:nth-child(1)"
@@ -77,27 +66,54 @@ function validateUserName(userName) {
   }
 }
 
+// TODO: check if parameter
 function getQuizId() {
   // TODO: validate
   return new URLSearchParams(window.location.search).get("id");
 }
 
-// TODO: grab all tracks, let user choose?
-// TODO: cry when user closes window :(
+async function isQuizActive() {
+  let response = await fetch(`${API_URL}/quiz/${quizId}`, {
+    method: "GET",
+  });
+
+  if (response.status == STATUSES.STATUS_NOT_FOUND) {
+    console.log("Quiz not found.");
+    return null;
+  } else {
+    response = await response.json();
+  }
+
+  if (!response) {
+    console.log("Quiz inactive.");
+    return false;
+  }
+
+  return true;
+}
+
+// TODO: userName change notification to server
+
+async function validateParameters() {
+  if (userName != getUserName() || quizId != getQuizId()) {
+    asyncStorageSet({ monitorState: "READY" });
+    location.reload();
+  }
+}
+
 // TODO: handle lack of tracks!
 
-async function getMediaTracks() {
+async function getVideoTrack() {
   try {
     let constraints = {
-      audio: true,
+      audio: false,
       video: true,
     };
 
     let stream = await navigator.mediaDevices.getUserMedia(constraints);
     let videoTrack = stream.getVideoTracks()[0];
-    let audioTrack = stream.getAudioTracks()[0];
 
-    return [videoTrack, audioTrack];
+    return videoTrack;
   } catch (error) {
     console.error(error);
   }
@@ -123,10 +139,16 @@ function preventCopying() {
 }
 
 async function monitor() {
-  let [videoTrack, audioTrack] = await getMediaTracks();
+  let videoTrack = await getVideoTrack();
   let imageCapture = new ImageCapture(videoTrack);
 
   interval = setInterval(async () => {
+    let monitorState = (await asyncStorageGet({ monitorState: null }))
+      .monitorState;
+    if (monitorState != "WORKING") {
+      clearInterval(interval);
+    }
+
     let frame = await imageCapture.takePhoto();
 
     let data = new FormData();
@@ -134,13 +156,16 @@ async function monitor() {
     data.append("id", quizId);
     data.append("frame", frame);
 
-    let response = await fetch(`${API_URL}/monitoring`, {
+    let response = await fetch(`${API_URL}/`, {
       method: "POST",
       body: data,
     });
 
-    if (response.ok) {
+    if (response.ok && response.status == 200) {
       console.log("Frame sent.");
+    } else {
+      console.log(response.ok, response.status);
+      await asyncStorageSet({ monitorState: "READY" });
     }
   }, 1000);
 }

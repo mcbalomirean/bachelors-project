@@ -1,7 +1,7 @@
 {
   "name": "Student Monitor",
   "manifest_version": 3,
-  "version": "0.1.2",
+  "version": "0.2.9",
 
   "action": {
     "default_icon": {
@@ -30,5 +30,5 @@
     }
   ],
 
-  "permissions": ["audioCapture", "videoCapture", "tabs", "storage"]
+  "permissions": ["videoCapture", "tabs", "storage"]
 }

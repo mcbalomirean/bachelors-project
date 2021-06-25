@@ -1,7 +1,4 @@
 try {
-  // TODO: connection between content script and background script
-  // TODO: handle disconnection
-
   const VALIDATE_BROWSER_MSG = "CHECK_BROWSER";
   const ILLEGAL_STATE = "ILLEGAL";
 
