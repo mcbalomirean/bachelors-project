@@ -5,26 +5,29 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 
 export default function QuizCard(props) {
+  const { handleToggle, quiz } = props;
+
   return (
-    <Card border={props.isActive ? "primary" : "secondary"}>
-      <Card.Header className={props.isActive ? "bg-primary text-light" : ""}>
-        {props.isActive ? "Active" : "Inactive"}
+    <Card border={quiz.isActive ? "primary" : "secondary"}>
+      <Card.Header className={quiz.isActive ? "bg-primary text-light" : ""}>
+        {quiz.isActive ? "Active" : "Inactive"}
       </Card.Header>
       <Card.Body>
-        <Card.Title>Id: {props.id}</Card.Title>
+        <Card.Title>Id: {quiz.id}</Card.Title>
         <Card.Subtitle className="mb-2 text-muted">
-          Platform: {props.platform}
+          Platform: {quiz.platform}
         </Card.Subtitle>
-        <Card.Text>{props.noStudents} student sessions.</Card.Text>
-        <Button variant="primary" as={Link} to={`/${props.id}`}>
+        <Card.Text>{quiz.noStudents} student sessions.</Card.Text>
+        <Button variant="primary" as={Link} to={`/${quiz.id}`} className="mr-1">
           View
         </Button>
-        {props.isActive ? (
+        {quiz.isActive ? (
           <Button
             variant="primary"
             onClick={() => {
-              props.handleToggle(props.id);
+              handleToggle(quiz.id);
             }}
+            className="ml-1"
           >
             Disable
           </Button>
@@ -32,8 +35,9 @@ export default function QuizCard(props) {
           <Button
             variant="primary"
             onClick={() => {
-              props.handleToggle(props.id);
+              handleToggle(quiz.id);
             }}
+            className="ml-1"
           >
             Enable
           </Button>

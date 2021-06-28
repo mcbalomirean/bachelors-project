@@ -238,7 +238,7 @@ module.exports.checkQuiz = async (req, res) => {
 module.exports.receiveData = async (req, res) => {
   let name = req.body.name;
   let id = req.body.id;
-  let frame = req.files.frame;
+  let misc = req.body.misc;
 
   let quizActive = await isQuizActive(id);
 
@@ -252,14 +252,20 @@ module.exports.receiveData = async (req, res) => {
     where: { StudentName: name, QuizId: id },
   });
 
-  let sessionPath = `${SESSIONS_PATH}/${name}`;
+  if (misc) {
+    flagData(session, enums.DATA_TYPES[1], "", misc);
+  }
 
-  let uploadDate = new Date().getTime();
-  let uploadPath = `${sessionPath}/${uploadDate}.png`;
+  if (req.files && req.files.frame) {
+    let frame = req.files.frame;
 
-  let storagePath = `${name}/${uploadDate}.png`;
+    let sessionPath = `${SESSIONS_PATH}/${name}`;
 
-  if (frame) {
+    let uploadDate = new Date().getTime();
+    let uploadPath = `${sessionPath}/${uploadDate}.png`;
+
+    let storagePath = `${name}/${uploadDate}.png`;
+
     try {
       await fs.mkdir(sessionPath);
     } catch (error) {

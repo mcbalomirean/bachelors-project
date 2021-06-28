@@ -1,10 +1,10 @@
 const { Sequelize } = require("sequelize");
-var db = require("../models/database");
+const db = require("../models/database");
 
 module.exports.create = async (req, res) => {
   try {
     let result = await db.Quiz.create({
-      id: req.body.id,
+      id: parseInt(req.body.id),
       platform: req.body.platform,
     });
     res.status(201).send(result);
@@ -14,11 +14,11 @@ module.exports.create = async (req, res) => {
   }
 };
 
-module.exports.toggle = async (req, res) => {
+module.exports.toggleQuizState = async (req, res) => {
   try {
     let [affected, actual] = await db.Quiz.update(
       { isActive: Sequelize.literal("NOT isActive") },
-      { where: { id: req.params.id } }
+      { where: { id: req.body.id } }
     );
 
     if (affected <= 0) {
@@ -27,6 +27,23 @@ module.exports.toggle = async (req, res) => {
 
     res.status(200).end();
   } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+module.exports.unflagData = async (req, res) => {
+  try {
+    let deletedRows = await db.FlaggedData.destroy({
+      where: { id: req.params.id },
+    });
+
+    if (deletedRows) {
+      res.status(200).send({ message: "Data unflagged." });
+    } else {
+      res.status(404).send({ message: "No data found." });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 };
@@ -41,7 +58,8 @@ module.exports.findAll = async (req, res) => {
         exclude: ["createdAt", "updatedAt"],
       },
       include: [{ model: db.Session, attributes: [] }],
-      group: ["Quiz.id", Sequelize.col("Sessions.id")],
+      // group: ["Quiz.id", Sequelize.col("Sessions.id")],
+      group: ["Quiz.id"],
     });
 
     res.status(200).send(results);
@@ -61,19 +79,52 @@ module.exports.getQuizSessions = async (req, res) => {
         attributes: {
           include: [
             [
-              Sequelize.fn("COUNT", Sequelize.col("FlaggedData.id")),
+              Sequelize.literal(
+                "(SELECT COUNT(`Flagged_Data`.`id`) FROM `Flagged_Data` WHERE `Flagged_Data`.`SessionId` = `Session`.`id` AND `Flagged_Data`.`type` = 1)"
+              ),
+              "noFlaggedFrames",
+            ],
+            [
+              Sequelize.literal(
+                "(SELECT COUNT(`Flagged_Data`.`id`) FROM `Flagged_Data` WHERE `Flagged_Data`.`SessionId` = `Session`.`id` AND `Flagged_Data`.`type` = 2)"
+              ),
+              "noFlaggedMiscData",
+            ],
+            [
+              Sequelize.literal("(SELECT noFlaggedFrames + noFlaggedMiscData)"),
               "noFlaggedData",
             ],
           ],
           exclude: ["createdAt", "updatedAt"],
         },
         include: [{ model: db.FlaggedData, as: "FlaggedData", attributes: [] }],
-        group: ["Session.id"],
       });
 
       res.status(200).send(results);
     } else {
-      res.status(404).send("Quiz not found.");
+      res.status(404).send({ message: "Quiz not found." });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+};
+
+module.exports.getFlaggedData = async (req, res) => {
+  try {
+    let session = await db.Session.findByPk(req.params.id);
+
+    if (session) {
+      let results = await session.getFlaggedData({
+        attributes: {
+          exclude: ["SessionId", "createdAt", "updatedAt"],
+        },
+        where: { type: req.params.type },
+      });
+
+      res.status(200).send(results);
+    } else {
+      res.status(404).send({ message: "Session not found." });
     }
   } catch (error) {
     console.log(error);

@@ -1,4 +1,11 @@
 const API_URL = "http://localhost:3001/monitoring";
+const MESSAGES = {
+  CHECK_BROWSER: "CHECK_BROWSER",
+};
+const MONITOR_STATES = {
+  READY: "READY",
+  WORKING: "WORKING",
+};
 const STATUSES = {
   STATUS_OK: 200,
   STATUS_NOT_FOUND: 404,
@@ -15,23 +22,26 @@ async function main() {
 
   switch (monitorState) {
     case null:
-      await asyncStorageSet({ monitorState: "READY" });
-    case "READY":
+      await asyncStorageSet({ monitorState: MONITOR_STATES.READY });
+    case MONITOR_STATES.READY:
       // TODO: throws, validations
       userName = getUserName();
-      validateUserName(userName);
-
       quizId = getQuizId();
-      if (!(await isQuizActive())) {
+
+      if (
+        !isUserNameValid() ||
+        !(await isQuizActive()) ||
+        !(await isOnlyTab())
+      ) {
         return;
       }
 
       await asyncStorageSet({
-        monitorState: "WORKING",
+        monitorState: MONITOR_STATES.WORKING,
         userName: userName,
         quizId: quizId,
       });
-    case "WORKING":
+    case MONITOR_STATES.WORKING:
       if (!userName || !quizId) {
         let values = await asyncStorageGet(["userName", "quizId"]);
         userName = values.userName;
@@ -57,13 +67,15 @@ function getUserName() {
   return a ? a.innerHTML : null;
 }
 
-function validateUserName(userName) {
+function isUserNameValid() {
   if (!userName || userName === "Log in" || userName === "Autentificare") {
     window.alert(
       "You need to log in before the Student Monitor extension can initialize!"
     );
-    throw new Error("Student not logged in.");
+    return false;
   }
+
+  return true;
 }
 
 // TODO: check if parameter
@@ -85,7 +97,18 @@ async function isQuizActive() {
   }
 
   if (!response) {
-    console.log("Quiz inactive.");
+    window.alert("This quiz is not active.");
+    return false;
+  }
+
+  return true;
+}
+
+async function isOnlyTab() {
+  let ok = (await asyncSendMessage(MESSAGES.CHECK_BROWSER)).ok;
+
+  if (!ok) {
+    window.alert("Too many windows or tabs open. Reload page after fixing.");
     return false;
   }
 
@@ -96,11 +119,11 @@ async function isQuizActive() {
 
 async function validateParameters() {
   if (userName != getUserName() || quizId != getQuizId()) {
-    asyncStorageSet({ monitorState: "READY" });
+    await asyncStorageSet({ monitorState: MONITOR_STATES.READY });
+    await asyncStorageRemove(["userName", "quizId"]);
     location.reload();
   }
 }
-
 // TODO: handle lack of tracks!
 
 async function getVideoTrack() {
@@ -136,6 +159,28 @@ function preventCopying() {
   document.addEventListener("selectstart", (event) => {
     event.preventDefault();
   });
+  document.addEventListener("mouseleave", (event) => {
+    if (!event.relatedTarget && !event.toElement) {
+      sendEvent("Mouse cursor has left the page.");
+    }
+  });
+}
+
+async function sendEvent(event) {
+  let data = new FormData();
+  data.append("name", userName);
+  data.append("id", quizId);
+  data.append("misc", event);
+
+  let response = await fetch(`${API_URL}/`, {
+    method: "POST",
+    body: data,
+  });
+
+  if (!response.ok && response.status != 200) {
+    await asyncStorageSet({ monitorState: MONITOR_STATES.READY });
+    await asyncStorageRemove(["userName", "quizId"]);
+  }
 }
 
 async function monitor() {
@@ -145,7 +190,7 @@ async function monitor() {
   interval = setInterval(async () => {
     let monitorState = (await asyncStorageGet({ monitorState: null }))
       .monitorState;
-    if (monitorState != "WORKING") {
+    if (monitorState != MONITOR_STATES.WORKING) {
       clearInterval(interval);
     }
 
@@ -161,13 +206,23 @@ async function monitor() {
       body: data,
     });
 
-    if (response.ok && response.status == 200) {
-      console.log("Frame sent.");
-    } else {
-      console.log(response.ok, response.status);
-      await asyncStorageSet({ monitorState: "READY" });
+    if (!response.ok && response.status != 200) {
+      await asyncStorageSet({ monitorState: MONITOR_STATES.READY });
+      await asyncStorageRemove(["userName", "quizId"]);
     }
   }, 1000);
+}
+
+function asyncSendMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+
+      resolve(response);
+    });
+  });
 }
 
 // TODO: chrome.runtime.lastError not available
@@ -191,6 +246,18 @@ function asyncStorageSet(keys) {
       }
 
       resolve(items);
+    });
+  });
+}
+
+function asyncStorageRemove(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.remove(keys, () => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+
+      resolve();
     });
   });
 }
