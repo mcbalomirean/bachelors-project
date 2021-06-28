@@ -81,7 +81,14 @@ function isUserNameValid() {
 // TODO: check if parameter
 function getQuizId() {
   // TODO: validate
-  return new URLSearchParams(window.location.search).get("id");
+  const quizURL = new URL(
+    document
+      .querySelector(
+        "#page-navbar > div.breadcrumb-nav > nav > ol > li:last-child > a"
+      )
+      .getAttribute("href")
+  );
+  return quizURL.searchParams.get("id");
 }
 
 async function isQuizActive() {

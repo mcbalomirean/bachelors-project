@@ -7,7 +7,7 @@ export default function MiscDataCard(props) {
   const { data, handleUnflag } = props;
 
   return (
-    <Card>
+    <Card style={{ flex: "1 1 30%", maxWidth: "33%" }} className="m-3">
       <Card.Body>
         <Card.Title className="mb-3">{data.reason}</Card.Title>
         <Button

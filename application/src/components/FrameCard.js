@@ -10,7 +10,7 @@ export default function FrameCard(props) {
   const date = new Date(parseInt(frame.path.match(/\d+/)[0]));
 
   return (
-    <Card>
+    <Card style={{ flex: "1 1 30%", maxWidth: "33%" }} className="m-3">
       <Card.Header>{date.toUTCString()}</Card.Header>
       <Card.Img variant="top" src={`${API}/sessions/${frame.path}`} />
       <Card.Body>

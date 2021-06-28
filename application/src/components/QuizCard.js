@@ -8,7 +8,11 @@ export default function QuizCard(props) {
   const { handleToggle, quiz } = props;
 
   return (
-    <Card border={quiz.isActive ? "primary" : "secondary"}>
+    <Card
+      border={quiz.isActive ? "primary" : "secondary"}
+      style={{ flex: "1 1 30%", maxWidth: "33%" }}
+      className="m-3"
+    >
       <Card.Header className={quiz.isActive ? "bg-primary text-light" : ""}>
         {quiz.isActive ? "Active" : "Inactive"}
       </Card.Header>

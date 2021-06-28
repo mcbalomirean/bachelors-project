@@ -8,7 +8,11 @@ export default function SessionCard(props) {
   const { session } = props;
 
   return (
-    <Card border={session.noFlaggedData ? "danger" : "secondary"}>
+    <Card
+      border={session.noFlaggedData ? "danger" : "secondary"}
+      style={{ flex: "1 1 30%", maxWidth: "33%" }}
+      className="m-3"
+    >
       <Card.Header
         className={session.noFlaggedData ? "bg-danger text-light" : ""}
       >

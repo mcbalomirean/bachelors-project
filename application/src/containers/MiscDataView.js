@@ -5,7 +5,7 @@ import { API } from "../util/constants";
 
 import Alert from "react-bootstrap/Alert";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
-import CardColumns from "react-bootstrap/CardColumns";
+import CardDeck from "react-bootstrap/CardDeck";
 import MiscDataCard from "../components/MiscDataCard";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -38,7 +38,7 @@ export default function Quizzes() {
 
   return (
     <Fragment>
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="light" expand="md">
         <Nav>
           <Breadcrumb listProps={{ className: "mb-0" }} className="mb-0">
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
@@ -53,11 +53,11 @@ export default function Quizzes() {
         </Nav>
       </Navbar>
       {miscData.length > 0 ? (
-        <CardColumns className="m-3">
+        <CardDeck className="m-0">
           {miscData.map((data, idx) => (
             <MiscDataCard key={idx} data={data} handleUnflag={handleUnflag} />
           ))}
-        </CardColumns>
+        </CardDeck>
       ) : (
         <Alert variant="info">
           <Alert.Heading>No data.</Alert.Heading>

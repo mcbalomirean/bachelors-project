@@ -4,7 +4,7 @@ import { API } from "../util/constants";
 
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import Button from "react-bootstrap/Button";
-import CardColumns from "react-bootstrap/CardColumns";
+import CardDeck from "react-bootstrap/CardDeck";
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
 import Modal from "react-bootstrap/Modal";
@@ -99,7 +99,7 @@ export default function Quizzes() {
 
   return (
     <Fragment>
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="light" expand="md">
         <Nav>
           <Breadcrumb listProps={{ className: "mb-0" }} className="mb-0">
             <Breadcrumb.Item active>Quizzes</Breadcrumb.Item>
@@ -118,7 +118,7 @@ export default function Quizzes() {
             <FormControl
               type="text"
               placeholder="Search..."
-              className="my-2 my-lg-0 mr-lg-2"
+              className="my-2 my-md-0 mr-md-2"
               value={searchValue}
               onChange={handleSearchBarChange}
             />
@@ -132,7 +132,7 @@ export default function Quizzes() {
           </Form>
         </Navbar.Collapse>
       </Navbar>
-      <CardColumns className="m-3">
+      <CardDeck className="m-0">
         {filteredQuizzes.length > 0
           ? filteredQuizzes.map((quiz, idx) => (
               <QuizCard key={idx} quiz={quiz} handleToggle={handleToggleQuiz} />
@@ -140,7 +140,7 @@ export default function Quizzes() {
           : quizzes.map((quiz, idx) => (
               <QuizCard key={idx} quiz={quiz} handleToggle={handleToggleQuiz} />
             ))}
-      </CardColumns>
+      </CardDeck>
 
       <Modal centered show={showCreateModal} onHide={handleCloseCreateModal}>
         <Modal.Header closeButton>

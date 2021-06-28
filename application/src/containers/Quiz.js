@@ -4,7 +4,7 @@ import axios from "axios";
 import { API } from "../util/constants";
 
 import Breadcrumb from "react-bootstrap/Breadcrumb";
-import CardColumns from "react-bootstrap/CardColumns";
+import CardDeck from "react-bootstrap/CardDeck";
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
 import Nav from "react-bootstrap/Nav";
@@ -51,7 +51,7 @@ export default function Quiz(props) {
 
   return (
     <Fragment>
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="light" expand="md">
         <Nav>
           <Breadcrumb listProps={{ className: "mb-0" }} className="mb-0">
             <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
@@ -75,13 +75,13 @@ export default function Quiz(props) {
               placeholder="Search..."
               value={searchValue}
               onChange={handleSearchBarChange}
-              className="my-2 my-lg-0"
+              className="my-2 my-md-0"
             />
           </Form>
         </Navbar.Collapse>
       </Navbar>
 
-      <CardColumns className="m-3">
+      <CardDeck className="m-0">
         {filteredSessions.length > 0
           ? filteredSessions.map((session, idx) => (
               <SessionCard key={idx} session={session} />
@@ -89,7 +89,7 @@ export default function Quiz(props) {
           : sessions.map((session, idx) => (
               <SessionCard key={idx} session={session} />
             ))}
-      </CardColumns>
+      </CardDeck>
     </Fragment>
   );
 }
