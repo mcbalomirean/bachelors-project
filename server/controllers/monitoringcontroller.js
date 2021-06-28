@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 
-const { Quiz, Session, FlaggedData } = require("../models/database");
+const { Quiz, Session } = require("../models/database");
 const { SESSIONS_PATH, enums } = require("../data/constants");
 
 const tf = require("@tensorflow/tfjs-node");
